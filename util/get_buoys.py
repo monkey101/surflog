@@ -11,7 +11,7 @@ from BeautifulSoup import BeautifulSoup
 
 
 NOAA_ROOT = "http://www.ndbc.noaa.gov"
-OUTPUT_FILE = "../data/all_buoys.csv"
+OUTPUT_FILE = "data/all_buoys.csv"
 
 buoy_csv = csv.writer(open(OUTPUT_FILE, "wb")) 
 buoy_csv.writerow(['buoy_id', 'latitude', 'longitude', 'description'])

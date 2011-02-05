@@ -1,26 +1,12 @@
-<html>
-<body>
-<p>
-
-{% with messages = get_flashed_messages() %}
-    {% if messages %}
-        <ul class=flashes>
-        {% for message in messages %}
-            <li>{{ message }}</li>
-        {% endfor %}
-        </ul>
-    {% endif %}
-{% endwith %}
-Hello surflog!
-
-{% if buoys %}
-    <ul class=flashes>
+{% extends "layout.html" %}
+{% block title %}Buoy Listing{% endblock %}
+{% block body %}
+  <h2>Buoy Listing</h2>
+  {% if error %}<div class=error><strong>Error:</strong> {{ error }}</div>{% endif %}
+	<h4> Found {{ count }} buoys world wide</h4>
+    <ul>
     {% for buoy in buoys %}
         <li>{{ buoy.buoy_id }} - {{ buoy.description }}</li>
     {% endfor %}
     </ul>
-{% endif %}
-
-</body>
-
-</html>
+{% endblock %}

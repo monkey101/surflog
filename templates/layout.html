@@ -1,0 +1,31 @@
+<!doctype html>
+<title>{% block title %}Welcome{% endblock %} | SurfLog</title>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<div class=page>
+  <h1>SurfLog</h1>
+  <div class=navigation>
+  {% if g.user %}
+    <a href="{{ url_for('index') }}">home</a> |
+    <a href="{{ url_for('logout') }}">sign out [{{ g.user.username }}]</a>
+  {% else %}
+    <a href="{{ url_for('index') }}">home</a> |
+    <a href="{{ url_for('register') }}">sign up</a> |
+    <a href="{{ url_for('login') }}">sign in</a>
+  {% endif %}
+  </div>
+  {% with flashes = get_flashed_messages() %}
+    {% if flashes %}
+      <ul class=flashes>
+      {% for message in flashes %}
+        <li>{{ message }}
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+  <div class=body>
+  {% block body %}{% endblock %}
+  </div>
+  <div class=footer>
+    SurfLog &mdash; A Flask/MongoDB Application
+  </div>
+</div>
