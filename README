@@ -1,4 +1,4 @@
-						~~ Surflog ~~
+~~ Surflog ~~
 		
 ~ What is it?
 	A Mongodb and Flask powered server used to help log your surf sessions 
