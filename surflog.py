@@ -5,7 +5,6 @@
     A surf session logging application written with Flask and mongodb.
 
 """
-import hashlib
 from datetime import datetime
 
 from flask import Flask

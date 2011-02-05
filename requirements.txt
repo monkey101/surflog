@@ -1,2 +1,4 @@
 BeautifulSoup
 mongokit
+pymongo
+flask
