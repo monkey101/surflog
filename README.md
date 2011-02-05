@@ -1,10 +1,8 @@
 Surflog
 =============
-		
-What is it?
-------------
+
 A Mongodb and Flask powered server used to help log your surf sessions using real buoy data to track wave and weather conditions.
-	
+
 How do I use it?
 ------------
 - sudo pip install -r requirements.txt
