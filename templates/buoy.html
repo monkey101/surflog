@@ -1,0 +1,8 @@
+{% extends "layout.html" %}
+{% block title %}Buoy Detail{% endblock %}
+{% block body %}
+  <h2>Buoy Detail</h2>
+  {% if error %}<div class=error><strong>Error:</strong> {{ error }}</div>{% endif %}
+	<h4> {{ buoy._id }} </h4>
+    
+{% endblock %}

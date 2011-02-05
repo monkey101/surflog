@@ -84,12 +84,12 @@ class Buoy(Document):
     __collection__ = 'surf_log'
     __database__ = 'buoys'
     structure = {
-        'buoy_id': unicode,
+        '_id': unicode,
         'loc': [float],
         'description': unicode}
 
     validators = {
-        'buoy_id': max_length(5),
+        '_id': max_length(5),
         'description': max_length(120)
     }
     use_dot_notation = True
