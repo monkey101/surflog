@@ -5,23 +5,26 @@
   <h1>SurfLog</h1>
   <div class=navigation>
   {% if g.user %}
-    <a href="{{ url_for('index') }}">home</a> |
+    <a href="{{ url_for('home') }}">home</a> |
+    <a href="{{ url_for('user_sessions') }}">my sessions</a> |
+    <a href="{{ url_for('user_sessions') }}">new session</a> |
     <a href="{{ url_for('logout') }}">sign out [{{ g.user.username }}]</a>
   {% else %}
-    <a href="{{ url_for('index') }}">home</a> |
+    <a href="{{ url_for('home') }}">home</a> |
     <a href="{{ url_for('register') }}">sign up</a> |
     <a href="{{ url_for('login') }}">sign in</a>
   {% endif %}
   </div>
-  {% with flashes = get_flashed_messages() %}
-    {% if flashes %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
       <ul class=flashes>
-      {% for message in flashes %}
-        <li>{{ message }}
+      {% for category, message in messages %}
+        <div class="{{ category }}">{{ message }}</div>
       {% endfor %}
       </ul>
     {% endif %}
   {% endwith %}
+
   <div class=body>
   {% block body %}{% endblock %}
   </div>

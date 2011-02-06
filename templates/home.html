@@ -6,7 +6,7 @@
 	<h4> Found {{ count }} buoys world wide</h4>
     <ul>
     {% for buoy in buoys %}
-        <li>{{ buoy._id }} - {{ buoy.description }}</li>
+        <li><a href="{{ url_for('buoy', buoy_id=buoy._id) }}">{{ buoy._id }}</a> - {{ buoy.description }}</li>
     {% endfor %}
     </ul>
 {% endblock %}
