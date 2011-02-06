@@ -7,7 +7,7 @@ Add geospatial index.
 import csv
 from pymongo import Connection, GEO2D
 
-INPUT_FILE = "../data/all_buoys.csv"
+INPUT_FILE = "data/all_buoys.csv"
 
 buoy_csv = csv.reader(open(INPUT_FILE))
 header = buoy_csv.next()
