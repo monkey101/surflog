@@ -7,5 +7,5 @@ How do I use it?
 ------------
 -   sudo pip install -r requirements.txt
 -   cd util
--   run ./util/get_buoys.py to load mongodb with the buoy data
+-   run ./import_buoys.py to load mongodb with the buoy data
 -   run python surflog.py and go to http://localhost:5000
