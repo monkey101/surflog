@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block title %}Surf Spot{% endblock %}
+{% block body %}
+  <h2>Surf Spot</h2>
+
+  <form action="" method=post>
+    <dl>
+      <dt>Name:
+      <dd><input type=text name=name size=30 value="{{ spot.name }}">
+      <dt>Longitude:
+      <dd><input type=text name=longitude size=30 value="{{ spot.loc[0] }}">
+      <dt>Latitude:
+      <dd><input type=text name=latitude size=30 value="{{ spot.loc[1] }}">
+      <dt>Description:
+      <dd><textarea cols=50 rows=6 name=description>{{ spot.description }}</textarea>
+    </dl>
+    <div class=actions><input type=submit value="Submit"></div>
+  </form>
+{% endblock %}

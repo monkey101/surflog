@@ -4,9 +4,15 @@
   <h2>Buoy Detail</h2>
 
   <form action="" method=post>
-	<h4>Buoy ID:</h4> {{ buoy._id }} 
-	<h4>Location:</h4> Longitude: {{ buoy.loc[0] }} Latude: {{ buoy.loc[1] }}  
-	<h4>Description: </h4><textarea cols=50 rows=4 name=description>{{ buoy.description }}</textarea>
-  	<div class=actions><input type=submit value="Submit"></div>
+  	<dl>
+    	<dt>Buoy ID: 
+    	<dd>{{ buoy._id }} 
+    	<dt>Location:
+    	<dd>Longitude: {{ buoy.loc[0] }} 
+    	<dd>Latude: {{ buoy.loc[1] }}  
+    	<dt>Description:
+    	<dd><textarea cols=50 rows=4 name=description>{{ buoy.description }}</textarea>
+    </dl>
+    <div class=actions><input type=submit value="Submit"></div>
   </form>
 {% endblock %}

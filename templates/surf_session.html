@@ -1,12 +1,23 @@
 {% extends "layout.html" %}
-{% block title %}Buoy Detail{% endblock %}
+{% block title %}Session Detail{% endblock %}
 {% block body %}
-  <h2>Buoy Detail</h2>
+  <h2>Surf Session</h2>
 
   <form action="" method=post>
-	<h4>Buoy ID:</h4> {{ buoy._id }} 
-	<h4>Location:</h4> Longitude: {{ buoy.loc[0] }} Latude: {{ buoy.loc[1] }}  
-	<h4>Description: </h4><textarea cols=50 rows=4 name=description>{{ buoy.description }}</textarea>
+  	<dl>
+      <dt>Spot:
+      <dd>
+        <select name=spot>
+          {% for spot in spots %}
+            <option value={{ spot._id }}>{{ spot.name }}</option>
+          {% endfor %}
+        </select>
+        <a href="{{ url_for('spot', spot_id=0) }}">Create a new spot</a>
+          
+    	<dt>When:
+    	<dd><input type=text name=spot size=30 value="{{ surf_session.when }}">
+      <dt>Description:
+      <dd><textarea cols=50 rows=6 name=description>{{ surf_session.description }}</textarea>
   	<div class=actions><input type=submit value="Submit"></div>
   </form>
 {% endblock %}

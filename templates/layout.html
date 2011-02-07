@@ -7,7 +7,7 @@
   {% if g.user %}
     <a href="{{ url_for('home') }}">home</a> |
     <a href="{{ url_for('user_sessions') }}">my sessions</a> |
-    <a href="{{ url_for('user_sessions') }}">new session</a> |
+    <a href="{{ url_for('surf_session', surf_session_id=0) }}">new session</a> |
     <a href="{{ url_for('logout') }}">sign out [{{ g.user.username }}]</a>
   {% else %}
     <a href="{{ url_for('home') }}">home</a> |

@@ -1,12 +1,5 @@
 {% extends "layout.html" %}
-{% block title %}Buoy Detail{% endblock %}
+{% block title %}User Sessions{% endblock %}
 {% block body %}
-  <h2>Buoy Detail</h2>
-
-  <form action="" method=post>
-	<h4>Buoy ID:</h4> {{ buoy._id }} 
-	<h4>Location:</h4> Longitude: {{ buoy.loc[0] }} Latude: {{ buoy.loc[1] }}  
-	<h4>Description: </h4><textarea cols=50 rows=4 name=description>{{ buoy.description }}</textarea>
-  	<div class=actions><input type=submit value="Submit"></div>
-  </form>
+  <h2>User Sessions</h2>
 {% endblock %}

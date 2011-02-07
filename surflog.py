@@ -32,15 +32,10 @@ connection = Connection(app.config['MONGODB_HOST'],
 
 buoys_col = connection.surf_log.buoys
 users_col = connection.surf_log.users
+spots_col = connection.surf_log.spots
+surf_sessions_col = connection.surf_log.surf_sessions
 
 """ Utility methods """
-def get_user_by_name(username):
-    return users_col.User.find_one({"username": username})
-
-
-def get_user_by_id(user_id):
-    return users_col.User.find_one({"_id": user_id})
-
 
 def max_length(length):
     """ Validator for string fields """
@@ -58,21 +53,22 @@ def before_request():
     """
     g.user = None
     if 'user_id' in session:
-        g.user = get_user_by_id(session['user_id'])
+        g.user = User.get_user_by_id(session['user_id'])
 
 
 
 """ Register the mongo models """
 class RootDocument(Document):
-     structure = {}
-     skip_validation = False
-     use_autorefs = True
+    structure = {}
+    skip_validation = False
+    use_autorefs = True
+    use_dot_notation = True
 
 
 @connection.register        
 class User(RootDocument):
-    __collection__ = 'surf_log'
-    __database__ = 'users'
+    __collection__ = 'users'
+    __database__ = 'surf_log'
 
     structure = {
         'email': unicode,
@@ -83,26 +79,33 @@ class User(RootDocument):
         'email': max_length(120),
         'username': max_length(50),
     }
-    use_dot_notation = True
+    
+    @classmethod
+    def get_user_by_name(cls, username):
+        return users_col.User.find_one({"username": username})
+
+    @classmethod
+    def get_user_by_id(cls, user_id):
+        return users_col.User.find_one({"_id": user_id})
+
     def __repr__(self):
         return '<User %r>' % (self.username)
 
 
 @connection.register        
 class Buoy(RootDocument):
-    __collection__ = 'surf_log'
-    __database__ = 'buoys'
+    __database__ = 'surf_log'
+    __collection__ = 'buoys'
     structure = {
         '_id': unicode, #FIXME: what do i do to override the _id to be the 5 char buoy id?
         'loc': [float],
-        'description': unicode, 
+        'description': unicode,
         # FIXME: do we need this? 'last_update': datetime.datetime
     }
     validators = {
         '_id': max_length(5),
         'description': max_length(120)
     }
-    use_dot_notation = True
 
     """
     FIXME: ADD LATER
@@ -111,76 +114,132 @@ class Buoy(RootDocument):
             'fields':[('loc', '2d')]
          },
      ]
-     """
+    """
+    @classmethod
+    def get_by_id(cls, buoy_id):
+        return buoys_col.Buoy.find_one({"_id": buoy_id})
+    
+    @classmethod
+    def get_all(cls):
+        return buoys_col.Buoy.find()
+
+    def __repr__(self):
+        return '<Buoy %r>' % (self._id)
 
 @connection.register        
 class SurfSession(RootDocument):
-    __collection__ = 'surf_log'
-    __database__ = 'buoys'
+    __database__ = 'surf_log'
+    __collection__ = 'surf_sessions'
     structure = {
-        'time': datetime,
+        'surf_session_id': unicode,
+        'when': datetime,
         'yyyymmdd': unicode,
         'duration': int, # in minutes
-        'location': unicode,
         'rating': int,
-        'spot_id': ObjectId,
-        'user_email': unicode
+        'spot': ObjectId,
+        'user_email': unicode,
+        'description': unicode
     }
-    use_dot_notation = True
 
+    default_values = {'description': u'', 'when': u''}
+    
+    @classmethod
+    def get_by_id(cls, surf_session_id):
+        return surf_sessions_col.SurfSession.find_one({"_id": surf_session_id})
+    
+    def __repr__(self):
+        return '<SurfSession for %r at %r on %r>' % (self.user_email, self._id, self.date)
 
 @connection.register
 class SurfSpot(RootDocument):
-    __collection__ = 'surf_log'
-    __database__ = 'buoys'
+    __database__ = 'surf_log'
+    __collection__ = 'spots'
     structure = {
         'loc': [float], #x,y
         'name': unicode,
-        'description': unicode,        
+        'description': unicode,
     }
-        
+    default_values = {'loc':[0,0], 'name': u'', 'description': u''}
+
+    @classmethod
+    def get_by_id(cls, spot_id):
+        return spots_col.SurfSpot.find_one({"_id": spot_id})
+
+    @classmethod
+    def get_all(cls):
+        return spots_col.SurfSpot.find()
+    
+    def __repr__(self):
+        return '<SurfSpot %r>' % (self.name)        
 
 @connection.register
 class SurfConditions(RootDocument):
-    __collection__ = 'surf_log'
-    __database__ = 'buoys'
+    __database__ = 'surf_log'
+    __collection__ = 'surf_conditions'
     structure = {
         '_id': unicode, #hash(buoy_id + yyyymmdd)
         'day': unicode, #yyyymmdd
         'hour': [{unicode:unicode}], # array of dicts of condition by hour (0 - 23)
     }
-    use_dot_notation = True
-
+    def __repr__(self):
+        return '<SurfConditions %r>' % (self._id)        
 
 """ Define the routes and controllers """
 
 @app.route('/')
 def home():
-    buoys = buoys_col.Buoy.find()
+    buoys = Buoy.get_all()
     return render_template('home.html', count=buoys.count(), buoys=buoys)
-
 
 @app.route('/buoy/<buoy_id>', methods=['GET', 'POST'])
 def buoy(buoy_id):
-    buoy = buoys_col.Buoy.find_one({"_id": buoy_id})
+    buoy = Buoy.get_by_id(buoy_id)
     if request.method == 'POST':
         if g.user is None:
             flash('You cannot edit a buoy without being logged in', 'error')            
         else:
-            print buoy
             buoy.description = unicode(request.form['description'])
             buoy.save()
             flash('Buoy saved', 'success')
     return render_template('buoy.html', buoy=buoy)
 
-@app.route('/surf_session/<session_id>', methods=['GET', 'POST'])
-def surf_session(session_id):
+@app.route('/spot/<int:spot_id>', methods=['GET', 'POST'])
+def spot(spot_id):
+    spot = connection.SurfSpot()
+    if spot_id:
+        spot = SurfSpot.get_by_id(spot_id)
+
+    if request.method == 'POST':
+        if g.user is None:
+            flash('You cannot edit a spot without being logged in', 'error')            
+        else:
+            spot.name = unicode(request.form['name'])
+            spot.description = unicode(request.form['description'])
+            spot.loc[0] = float(request.form['longitude'])
+            spot.loc[1] = float(request.form['latitude'])
+            spot.save()
+            flash('Spot saved', 'success')
+    print spot
+    return render_template('spot.html', spot=spot)
+
+
+@app.route('/surf_session/<int:surf_session_id>', methods=['GET', 'POST'])
+def surf_session(surf_session_id):
     if g.user is None:
+        flash('You cannot create a session without being logged in', 'error')
         return redirect(url_for("login"))
+    
+    surf_session = connection.SurfSession()
+    if surf_session_id:
+        surf_session = SurfSession.get_by_id(surf_session_id)
     if request.method == 'POST':
         pass
-        
-    return render_template('surf_session.html', session=session)
+    
+    # FIXME: only return users spots ordered by num times surfed
+    spots = SurfSpot.get_all()
+    return render_template('surf_session.html', surf_session=surf_session, spots=spots)
+
+
         
 @app.route('/user_sessions', methods=['GET'])
 def user_sessions():
@@ -205,7 +264,7 @@ def register():
             flash('You have to enter a password', 'error')
         elif not request.form['password2']:
             flash('Your passwords do not match', 'error')
-        elif get_user_by_name(request.form['username']) is not None:
+        elif User.get_user_by_name(request.form['username']) is not None:
             flash('The username is already taken', 'error')
         else:
             user = users_col.User()
@@ -225,7 +284,7 @@ def login():
     if g.user:
         return redirect(url_for('home'))
     if request.method == 'POST':
-        user = get_user_by_name(request.form['username'])
+        user = User.get_user_by_name(request.form['username'])
         if user is None:
             flash('Invalid username', 'error')
         elif not check_password_hash(user['password_md5'],
