@@ -9,15 +9,25 @@
       <dd>
         <select name=spot>
           {% for spot in spots %}
-            <option value={{ spot._id }}>{{ spot.name }}</option>
+            <option value={{ spot._id }}
+              {% if spot._id == surf_session.spot %}
+                selected
+              {% endif %}
+            >{{ spot.name }}  
+            </option>
+           
           {% endfor %}
         </select>
         <a href="{{ url_for('spot', spot_id=0) }}">Create a new spot</a>
           
-    	<dt>When:
-    	<dd><input type=text name=spot size=30 value="{{ surf_session.when }}">
-      <dt>Description:
-      <dd><textarea cols=50 rows=6 name=description>{{ surf_session.description }}</textarea>
+      <dt>When:
+      <dd>
+        <input type=text name=when id=picker size=30 value="{{ surf_session.when|datetimeformat }}">
+        <img src="{{ url_for('static', filename='images/cal.gif') }}" onclick="javascript:NewCssCal('picker','MMddyyyy','dropdown',true,'12')" style="cursor:pointer">
+      <dt>Duration:
+      <dd><input type=text name=duration size=30 value="{{ surf_session.duration }}">
+      <dt>Notes:
+      <dd><textarea cols=50 rows=6 name=notes>{{ surf_session.notes }}</textarea>
   	<div class=actions><input type=submit value="Submit"></div>
   </form>
 {% endblock %}

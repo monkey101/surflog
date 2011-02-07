@@ -1,6 +1,8 @@
 <!doctype html>
 <title>{% block title %}Welcome{% endblock %} | SurfLog</title>
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/style.css') }}">
+<script src="{{ url_for('static', filename='js/datetimepicker_css.js') }}"></script>
+
 <div class=page>
   <h1>SurfLog</h1>
   <div class=navigation>

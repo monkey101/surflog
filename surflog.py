@@ -35,6 +35,8 @@ users_col = connection.surf_log.users
 spots_col = connection.surf_log.spots
 surf_sessions_col = connection.surf_log.surf_sessions
 
+datetime_format='%m-%d-%Y %I:%M%p'
+
 """ Utility methods """
 
 def max_length(length):
@@ -55,6 +57,11 @@ def before_request():
     if 'user_id' in session:
         g.user = User.get_user_by_id(session['user_id'])
 
+
+
+@app.template_filter('datetimeformat')
+def datetimeformat(value, format=datetime_format):
+    return value.strftime(format)
 
 
 """ Register the mongo models """
@@ -131,24 +138,27 @@ class SurfSession(RootDocument):
     __database__ = 'surf_log'
     __collection__ = 'surf_sessions'
     structure = {
-        'surf_session_id': unicode,
         'when': datetime,
         'yyyymmdd': unicode,
         'duration': int, # in minutes
         'rating': int,
         'spot': ObjectId,
         'user_email': unicode,
-        'description': unicode
+        'notes': unicode
     }
 
-    default_values = {'description': u'', 'when': u''}
+    default_values = {'notes': u'', 'when': datetime.now(), 'duration': 0}
     
     @classmethod
     def get_by_id(cls, surf_session_id):
-        return surf_sessions_col.SurfSession.find_one({"_id": surf_session_id})
+        return surf_sessions_col.SurfSession.find_one({'_id': ObjectId(surf_session_id)})
+    
+    @classmethod
+    def get_by_user(cls, user_email):
+        return surf_sessions_col.SurfSession.find({'user_email': user_email})
     
     def __repr__(self):
-        return '<SurfSession for %r at %r on %r>' % (self.user_email, self._id, self.date)
+        return '<SurfSession for %r at %r on %r>' % (self.user_email, self.spot, self.when)
 
 @connection.register
 class SurfSpot(RootDocument):
@@ -219,22 +229,33 @@ def spot(spot_id):
             spot.loc[1] = float(request.form['latitude'])
             spot.save()
             flash('Spot saved', 'success')
-    print spot
     return render_template('spot.html', spot=spot)
 
 
-@app.route('/surf_session/<int:surf_session_id>', methods=['GET', 'POST'])
+@app.route('/surf_session/<surf_session_id>', methods=['GET', 'POST'])
 def surf_session(surf_session_id):
     if g.user is None:
         flash('You cannot create a session without being logged in', 'error')
         return redirect(url_for("login"))
+
     
     surf_session = connection.SurfSession()
-    if surf_session_id:
+    if surf_session_id != '0':
+        print surf_session_id
+
         surf_session = SurfSession.get_by_id(surf_session_id)
+        print surf_session
     if request.method == 'POST':
-        pass
-    
+        surf_session.spot = ObjectId(request.form['spot'])
+        surf_session.notes = unicode(request.form['notes'])
+
+        surf_session.when = datetime.strptime(request.form['when'], datetime_format)        
+        surf_session.duration = int(request.form['duration'])        
+        surf_session.user_email = g.user.email
+        surf_session.save()
+        flash('Spot saved', 'success')
+        return redirect(url_for('surf_session', surf_session_id=surf_session._id))
+
     # FIXME: only return users spots ordered by num times surfed
     spots = SurfSpot.get_all()
     return render_template('surf_session.html', surf_session=surf_session, spots=spots)
@@ -244,9 +265,11 @@ def surf_session(surf_session_id):
 @app.route('/user_sessions', methods=['GET'])
 def user_sessions():
     if g.user is None:
+        flash('You cannot view your sessions without being logged in', 'error')
         return redirect(url_for("login"))
-        
-    return render_template('user_sessions.html', session=session)
+    sessions = SurfSession.get_by_user(g.user.email)
+    print sessions.count()
+    return render_template('user_sessions.html', sessions=sessions)
 
 
 @app.route('/register', methods=['GET', 'POST'])
