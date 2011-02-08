@@ -2,3 +2,4 @@ BeautifulSoup
 mongokit
 pymongo
 flask
+Flask-WTF

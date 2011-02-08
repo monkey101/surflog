@@ -18,7 +18,7 @@ buoys = db.buoys
 
 for row in buoy_csv:
     buoy = {'_id': row[0],
-            'loc': [float(row[2]), float(row[1])],
+            'loc': (float(row[2]), float(row[1])),
             'description': row[3] }
     buoys.update({'buoy_id': '%s' % row[0]}, buoy, upsert=True)
     status = db.last_status()

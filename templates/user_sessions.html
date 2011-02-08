@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block title %}User Sessions{% endblock %}
 {% block body %}
-  <h2>User Sessions</h2>
+  <h2>{{ g.user.username }}'s Sessions</h2>
   Found {{ sessions.count() }} Sessions
   {% for surf_session in sessions %}
     <h4>{{ surf_session.when }}</h4>
