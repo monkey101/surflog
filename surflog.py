@@ -76,11 +76,12 @@ def before_request():
     if 'user_id' in session:
         g.user = User.get_user_by_id(session['user_id'])
 
-@app.template_filter('datetimeformat')
-def datetimeformat(value, format=datetime_format):
+@app.template_filter('datetime_format_utc')
+def datetime_format_utc(value, format=datetime_format):
     """ Used in the templates for date formatting """
     local_time = utc_to_local(value)
     return local_time.strftime(format)
+
 
 
 """ Register the mongo models """

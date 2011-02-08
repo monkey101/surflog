@@ -4,10 +4,10 @@
   <h2>{{ g.user.username }}'s Sessions</h2>
   Found {{ sessions.count() }} Sessions
   {% for surf_session in sessions %}
-    <h4>{{ surf_session.when }}</h4>
+    <h4><a href="{{ url_for('surf_session', surf_session_id=surf_session._id) }}">{{ surf_session.when|datetime_format_utc }}</a></h4>
     <dl>
       <dt>Spot:
-      <dd>{{ surf_session.spot }}
+      <dd><a href="{{ url_for('spot', spot_id=surf_session.spot) }}">{{ surf_session.spot }}</a>
       <dt>Duration:
       <dd>{{ surf_session.duration }}
       <dt>Notes:

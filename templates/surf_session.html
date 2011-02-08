@@ -22,7 +22,7 @@
           
       <dt>When:
       <dd>
-        <input type=text name=when id=picker size=30 value="{{ surf_session.when|datetimeformat }}">
+        <input type=text name=when id=picker size=30 value="{{ surf_session.when|datetime_format_utc }}">
         <img src="{{ url_for('static', filename='images/cal.gif') }}" onclick="javascript:NewCssCal('picker','MMddyyyy','dropdown',true,'12')" style="cursor:pointer">
       <dt>Duration:
       <dd><input type=text name=duration size=30 value="{{ surf_session.duration }}">
