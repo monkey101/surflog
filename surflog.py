@@ -6,6 +6,8 @@
 
 """
 from datetime import datetime
+import time
+import calendar
 
 from flask import Flask
 from flask import Flask, request, session, url_for, redirect, \
@@ -55,6 +57,16 @@ def max_length(length):
         raise Exception('%s must be at most %s characters long' % length)
     return validate
 
+def local_to_utc(dt):
+    """ Converts from local time to UTC """
+    utc_struct_time = time.gmtime(time.mktime(dt.timetuple()))
+    return datetime.fromtimestamp(time.mktime(utc_struct_time))
+
+def utc_to_local(dt):
+    """ Converts from UTC to local time """
+    secs = calendar.timegm(dt.timetuple())
+    return datetime.fromtimestamp(time.mktime(time.localtime(secs)))
+
 @app.before_request
 def before_request():
     """look up the current user so that we know he's there.
@@ -67,7 +79,8 @@ def before_request():
 @app.template_filter('datetimeformat')
 def datetimeformat(value, format=datetime_format):
     """ Used in the templates for date formatting """
-    return value.strftime(format)
+    local_time = utc_to_local(value)
+    return local_time.strftime(format)
 
 
 """ Register the mongo models """
@@ -153,7 +166,7 @@ class SurfSession(RootDocument):
         'notes': unicode
     }
 
-    default_values = {'notes': u'', 'when': datetime.now(), 'duration': 0}
+    default_values = {'notes': u'', 'when': datetime.utcnow(), 'duration': 0}
     
     @classmethod
     def get_by_id(cls, surf_session_id):
@@ -247,7 +260,6 @@ def surf_session(surf_session_id):
     if g.user is None:
         flash('You cannot create a session without being logged in', 'error')
         return redirect(url_for("login"))
-
     
     surf_session = connection.SurfSession()
     if surf_session_id != '0':
@@ -257,7 +269,9 @@ def surf_session(surf_session_id):
         surf_session.spot = ObjectId(request.form['spot'])
         surf_session.notes = unicode(request.form['notes'])
 
-        surf_session.when = datetime.strptime(request.form['when'], datetime_format)        
+        # convert date to utc before importing
+        surf_session.when = \
+            local_to_utc(datetime.strptime(request.form['when'], datetime_format))
         surf_session.duration = int(request.form['duration'])        
         surf_session.user_email = g.user.email
         surf_session.save()
@@ -268,8 +282,6 @@ def surf_session(surf_session_id):
     spots = SurfSpot.get_all()
     return render_template('surf_session.html', surf_session=surf_session, spots=spots)
 
-
-        
 @app.route('/user_sessions', methods=['GET'])
 def user_sessions():
     if g.user is None:
