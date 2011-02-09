@@ -9,7 +9,9 @@
     	<dd>{{ buoy._id }} 
     	<dt>Location:
     	<dd>Longitude: {{ buoy.loc[0] }} 
-    	<dd>Latude: {{ buoy.loc[1] }}  
+    	<dd>Latude: {{ buoy.loc[1] }}
+    	<dt>Online: 
+    	<dd><input type=checkbox name=online value="{{ buoy.online }}" {% if buoy.online %}checked{% endif %}>
     	<dt>Description:
     	<dd><textarea cols=50 rows=4 name=description>{{ buoy.description }}</textarea>
     </dl>

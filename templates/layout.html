@@ -1,8 +1,9 @@
 <!doctype html>
+<head>
 <title>{% block title %}Welcome{% endblock %} | SurfLog</title>
 <link rel=stylesheet type=text/css href="/static/css/style.css">
-<script src="/static/js/datetimepicker_css.js"></script>
-
+{% block javascript %}{% endblock %}
+</head>
 <div class=page>
   <h1>SurfLog</h1>
   <div class=navigation>

@@ -19,6 +19,7 @@ from flaskext.wtf import ValidationError, Form, TextField, PasswordField, \
 
 from mongokit import Connection, Document
 from pymongo.objectid import ObjectId
+from pymongo import dbref
 
 
 # configuration
@@ -124,15 +125,17 @@ class Buoy(RootDocument):
     __database__ = 'surf_log'
     __collection__ = 'buoys'
     structure = {
-        '_id': unicode, #FIXME: what do i do to override the _id to be the 5 char buoy id?
+        '_id': unicode,
         'loc': (float,float), # long, lat
         'description': unicode,
+        'online': bool
         # FIXME: do we need this? 'last_update': datetime.datetime
     }
     validators = {
         '_id': max_length(5),
         'description': max_length(120)
     }
+    default_values = {'online': True, 'loc':(float(0), float(0))}
 
     """
     FIXME: ADD LATER
@@ -153,33 +156,6 @@ class Buoy(RootDocument):
     def __repr__(self):
         return '<Buoy %r>' % (self._id)
 
-@connection.register        
-class SurfSession(RootDocument):
-    __database__ = 'surf_log'
-    __collection__ = 'surf_sessions'
-    structure = {
-        'when': datetime,
-        'yyyymmdd': unicode,
-        'duration': int, # in minutes
-        'rating': int,
-        'spot': ObjectId,
-        'user_email': unicode,
-        'notes': unicode
-    }
-
-    default_values = {'notes': u'', 'when': datetime.utcnow(), 'duration': 0}
-    
-    @classmethod
-    def get_by_id(cls, surf_session_id):
-        return surf_sessions_col.SurfSession.find_one({'_id': ObjectId(surf_session_id)})
-    
-    @classmethod
-    def get_by_user(cls, user_email):
-        return surf_sessions_col.SurfSession.find({'user_email': user_email})
-    
-    def __repr__(self):
-        return '<SurfSession for %r at %r on %r>' % (self.user_email, self.spot, self.when)
-
 @connection.register
 class SurfSpot(RootDocument):
     __database__ = 'surf_log'
@@ -188,6 +164,7 @@ class SurfSpot(RootDocument):
         'loc': (float,float), #long, lat
         'name': unicode,
         'description': unicode,
+        'buoy': Buoy
     }
     default_values = {'loc':(0,0), 'name': u'', 'description': u''}
 
@@ -201,6 +178,33 @@ class SurfSpot(RootDocument):
     
     def __repr__(self):
         return '<SurfSpot %r>' % (self.name)        
+
+@connection.register        
+class SurfSession(RootDocument):
+    __database__ = 'surf_log'
+    __collection__ = 'surf_sessions'
+    structure = {
+        'when': datetime,
+        'yyyymmdd': unicode,
+        'duration': int, # in minutes
+        'rating': int,
+        'spot': SurfSpot,
+        'user_email': unicode,
+        'notes': unicode
+    }
+
+    default_values = {'notes': u'', 'when': datetime.utcnow(), 'duration': 0}
+    
+    @classmethod
+    def get_by_id(cls, surf_session_id):
+        return surf_sessions_col.SurfSession.find_one({'_id': ObjectId(surf_session_id)})
+
+    @classmethod
+    def get_by_user(cls, user_email):
+        return surf_sessions_col.SurfSession.find_one({'user_email': user_email})
+
+    def __repr__(self):
+        return '<SurfSession for %r at %r on %r>' % (self.user_email, self.spot, self.when)
 
 @connection.register
 class SurfConditions(RootDocument):
@@ -229,15 +233,16 @@ def buoy(buoy_id):
             flash('You cannot edit a buoy without being logged in', 'error')            
         else:
             buoy.description = unicode(request.form['description'])
+            if request.form.get('online'):
+                buoy.online = True
+            else:
+                buoy.online = False
             buoy.save()
             flash('Buoy saved', 'success')
     return render_template('buoy.html', buoy=buoy)
 
 @app.route('/spot/<spot_id>', methods=['GET', 'POST'])
 def spot(spot_id):
-    """ View or edit a SurfSpot
-    :param spot_id: the mongo _id of the spot
-    """
     spot = connection.SurfSpot()
     if spot_id != '0':
         spot = SurfSpot.get_by_id(spot_id)
@@ -249,6 +254,7 @@ def spot(spot_id):
             spot.name = unicode(request.form['name'])
             spot.description = unicode(request.form['description'])
             spot.loc = (float(request.form['longitude']), float(request.form['latitude']))
+            spot.buoy = Buoy.get_by_id(request.form['buoy_id'])
             spot.save()
             flash('Spot saved', 'success')
             return redirect(url_for('spot', spot_id=spot._id))
@@ -267,7 +273,7 @@ def surf_session(surf_session_id):
         surf_session = SurfSession.get_by_id(surf_session_id)
 
     if request.method == 'POST':
-        surf_session.spot = ObjectId(request.form['spot'])
+        surf_session.spot = SurfSpot.get_by_id(request.form['spot'])
         surf_session.notes = unicode(request.form['notes'])
 
         # convert date to utc before importing
@@ -276,7 +282,7 @@ def surf_session(surf_session_id):
         surf_session.duration = int(request.form['duration'])        
         surf_session.user_email = g.user.email
         surf_session.save()
-        flash('Spot saved', 'success')
+        flash('Session saved', 'success')
         return redirect(url_for('surf_session', surf_session_id=surf_session._id))
 
     # FIXME: only return users spots ordered by num times surfed
