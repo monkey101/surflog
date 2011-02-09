@@ -1,6 +1,14 @@
 {% extends "layout.html" %}
 {% block title %}Buoy Detail{% endblock %}
+{% block javascript %}
+  <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;sensor=false&amp;key=ABQIAAAA1E1aVA_7eBSfQF1uWFMHNhT2yXp_ZAY8_ufC3CFXhHIE1NvwkxQg59jahIEFQc7e6BIc11G2-_I8hA" 
+          type="text/javascript">
+  </script>
+  <script src="/static/js/gmaps.js" type="text/javascript"></script>
+{% endblock %}
+
 {% block body %}
+  <body onload="initialize({{ buoy.loc[1] }}, {{ buoy.loc[0] }}, '{{ buoy._id }}', 'buoy')">
   <h2>Buoy Detail</h2>
 
   <form action="" method=post>
@@ -17,4 +25,6 @@
     </dl>
     <div class=actions><input type=submit value="Submit"></div>
   </form>
+  <div id="map_canvas" style="width: 500px; height: 300px"></div>
+  </body>
 {% endblock %}

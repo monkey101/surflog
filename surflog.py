@@ -201,7 +201,7 @@ class SurfSession(RootDocument):
 
     @classmethod
     def get_by_user(cls, user_email):
-        return surf_sessions_col.SurfSession.find_one({'user_email': user_email})
+        return surf_sessions_col.SurfSession.find({'user_email': user_email})
 
     def __repr__(self):
         return '<SurfSession for %r at %r on %r>' % (self.user_email, self.spot, self.when)
@@ -295,7 +295,6 @@ def user_sessions():
         flash('You cannot view your sessions without being logged in', 'error')
         return redirect(url_for("login"))
     sessions = SurfSession.get_by_user(g.user.email)
-    print sessions.count()
     return render_template('user_sessions.html', sessions=sessions)
 
 class RegistrationForm(Form):
