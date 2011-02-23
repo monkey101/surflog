@@ -85,6 +85,12 @@ def datetime_format_utc(value, format=datetime_format):
 
 
 
+
+
+
+
+
+
 """ Register the mongo models """
 
 class RootDocument(Document):
@@ -120,6 +126,7 @@ class User(RootDocument):
     def __repr__(self):
         return '<User %r>' % (self.username)
 
+
 @connection.register        
 class Buoy(RootDocument):
     __database__ = 'surf_log'
@@ -137,14 +144,13 @@ class Buoy(RootDocument):
     }
     default_values = {'online': True, 'loc':(float(0), float(0))}
 
-    """
-    FIXME: ADD LATER
+
     indexes = [
         {
             'fields':[('loc', '2d')]
          },
      ]
-    """
+
     @classmethod
     def get_by_id(cls, buoy_id):
         return buoys_col.Buoy.find_one({"_id": buoy_id})
@@ -155,6 +161,7 @@ class Buoy(RootDocument):
 
     def __repr__(self):
         return '<Buoy %r>' % (self._id)
+
 
 @connection.register
 class SurfSpot(RootDocument):
@@ -168,6 +175,12 @@ class SurfSpot(RootDocument):
     }
     default_values = {'loc':(0,0), 'name': u'', 'description': u''}
 
+    indexes = [
+        {
+            'fields':[('loc', '2d')]
+         },
+     ]    
+
     @classmethod
     def get_by_id(cls, spot_id):
         return spots_col.SurfSpot.find_one({"_id": ObjectId(spot_id)})
@@ -178,6 +191,7 @@ class SurfSpot(RootDocument):
     
     def __repr__(self):
         return '<SurfSpot %r>' % (self.name)        
+
 
 @connection.register        
 class SurfSession(RootDocument):
@@ -206,6 +220,7 @@ class SurfSession(RootDocument):
     def __repr__(self):
         return '<SurfSession for %r at %r on %r>' % (self.user_email, self.spot, self.when)
 
+
 @connection.register
 class SurfConditions(RootDocument):
     __database__ = 'surf_log'
@@ -217,6 +232,17 @@ class SurfConditions(RootDocument):
     }
     def __repr__(self):
         return '<SurfConditions %r>' % (self._id)        
+
+
+
+
+
+
+
+
+
+
+
 
 """ Define the routes and controllers """
 
