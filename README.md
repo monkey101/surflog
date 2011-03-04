@@ -13,3 +13,4 @@ How do I use it?
 To Do List
 ------------
 -   Scrape wannasurf list of surf spots, e.g., http://www.wannasurf.com/spot/Europe/Greece/Ionian_Sea/kastro_point/
+-   Add session data
