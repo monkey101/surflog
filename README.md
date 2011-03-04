@@ -13,4 +13,6 @@ How do I use it?
 To Do List
 ------------
 -   Scrape wannasurf list of surf spots, e.g., http://www.wannasurf.com/spot/Europe/Greece/Ionian_Sea/kastro_point/
--   Add session data
+-   Add ability to select buoy from surf spot page
+-   When user adds session, make request to buoy for all hourly data
+-   View graphical representation of condition data using dygraph
