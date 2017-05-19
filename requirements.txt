@@ -1,5 +1,5 @@
 BeautifulSoup
 mongokit
-pymongo
-flask
+pymongo==2.8
+flask==0.9
 Flask-WTF

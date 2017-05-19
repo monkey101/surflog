@@ -14,12 +14,15 @@ from flask import Flask, request, session, url_for, redirect, \
      render_template, abort, g, flash
 
 from werkzeug import check_password_hash, generate_password_hash
-from flaskext.wtf import ValidationError, Form, TextField, PasswordField, \
-     BooleanField, Required, validators
+from flask_wtf import Form
+
+import wtforms
+from wtforms.fields import TextField, PasswordField, BooleanField
+from wtforms.validators import ValidationError, Required
+from wtforms import validators
 
 from mongokit import Connection, Document
-from pymongo.objectid import ObjectId
-from pymongo import dbref
+#from pymongo.objectid import ObjectId
 
 
 # configuration
@@ -28,11 +31,11 @@ MONGODB_PORT = 27017
 DEBUG = True
 SECRET_KEY = 'development key'
 SESSION_KEY = ''
-CSRF_ENABLED = False  # FIXME: Why isn't CSRF_ENABLED working?
 
 # create the application object
 app = Flask(__name__)
 app.config.from_object(__name__)
+app.config['WTF_CSRF_CHECK_DEFAULT'] = False
 
 
 # connect to the database
@@ -100,7 +103,7 @@ class RootDocument(Document):
     use_dot_notation = True
 
 
-@connection.register        
+@connection.register
 class User(RootDocument):
     __collection__ = 'users'
     __database__ = 'surf_log'
@@ -127,7 +130,7 @@ class User(RootDocument):
         return '<User %r>' % (self.username)
 
 
-@connection.register        
+@connection.register
 class Buoy(RootDocument):
     __database__ = 'surf_log'
     __collection__ = 'buoys'
@@ -183,7 +186,7 @@ class SurfSpot(RootDocument):
 
     @classmethod
     def get_by_id(cls, spot_id):
-        return spots_col.SurfSpot.find_one({"_id": ObjectId(spot_id)})
+        return spots_col.SurfSpot.find_one({"_id": (spot_id)})
 
     @classmethod
     def get_all(cls):
@@ -211,7 +214,7 @@ class SurfSession(RootDocument):
     
     @classmethod
     def get_by_id(cls, surf_session_id):
-        return surf_sessions_col.SurfSession.find_one({'_id': ObjectId(surf_session_id)})
+        return surf_sessions_col.SurfSession.find_one({'_id': (surf_session_id)})
 
     @classmethod
     def get_by_user(cls, user_email):
@@ -324,8 +327,11 @@ def user_sessions():
     return render_template('user_sessions.html', sessions=sessions)
 
 class RegistrationForm(Form):
+    class Meta:
+        csrf = False # Disable CSRF
+
     """ Use WTForms for validation """
-    username = TextField('Username', [validators.Length(min=4, max=50)])
+    username = TextField('Username', [wtforms.validators.Length(min=4, max=50)])
     email = TextField('Email Address', [validators.Length(min=6, max=50)])
     password = PasswordField('Password', [
         validators.Required(),
@@ -362,16 +368,19 @@ def register():
 
 
 class LoginForm(Form):
+    class Meta:
+        csrf = False # disable CSRF
+
     """ Use WTForms for validation """
     email = TextField('Email Address', [validators.Required()])
     password = PasswordField('Password', [validators.Required()])
-    
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if g.user:
         return redirect(url_for('home'))
-    
+
     form = LoginForm()
     if request.method == 'POST' and form.validate():
         user = User.get_user_by_email(request.form['email'])
